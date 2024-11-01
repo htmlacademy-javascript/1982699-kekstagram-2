@@ -1,111 +1,61 @@
-const SUBJECTS = [
-  'Батон',
-  'Бездна',
-  'Пейзаж',
-  'Чашка',
-  'Зонт',
-  'Нота',
-  'Храм',
-  'Цитрус',
-  'Лебедь',
-  'Тигр',
-];
-const ADJECTIVES = [
-  'красный',
-  'универсальный',
-  'зеленый',
-  'оранжевый',
-  'громкий',
-  'прекрасный',
-  'жемчужный',
-  'милый',
-  'королевский',
-  'яркий',
-];
-const ACTIONS = [
-  'играет в парке',
-  'отдыхает на природе',
-  'летает в небе',
-  'светит в горах',
-  'растет в лесу',
-  'стоит у реки',
-  'переходит дорогу',
-  'цветет в огороде',
-  'плавает в озере',
-  'плавает в бассейне'
-];
-const PLACES = [
-  'в городе',
-  'в деревне',
-  'на дороге',
-  'в парке',
-  'на пляже',
-  'в лесу',
-  'на острове',
-  'в пустыне',
-  'в горах',
-  'в бассейне'
-];
-const SIMILAR_WIZARD_COUNT = 25;
+
+const MESSAGE_SET = 'Всё отлично! В целом всё неплохо. Но не всё.Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?! ';
+
+const NAMES_SET = 'Егор, Иван, Мария, 12 имен';
 
 const getRandomInteger = (a, b) => {
   const lower = Math.ceil(Math.min(a, b));
   const upper = Math.floor(Math.max(a, b));
-  const result = Math.random() * (upper - lower + 1) + lower;
-  return Math.floor(result);
+  let previousResult = -1;
+  return () => {
+    const result = Math.floor(Math.random() * (upper - lower + 1) + lower);
+    If(previousResult !== result); {
+      previousResult = result;
+      return result;
+    }
+  };
 };
+const createComment = () => {
+  let id = 1;
+  const messageArray = MESSAGE_SET.split('. ');
+  const nameArray = NAMES_SET.split(', ');
+  const indexMessageArr = getRandomInteger(0, messageArray.lentgh - 1);
+  const indexNameArr = getRandomInteger(0, nameArray.lentgh - 1);
 
-const generateRandomComment = () => {
-  const comments = [
-    'Всё отлично!',
-    'В целом всё неплохо. Но не всё.',
-    'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.',
-    'Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.',
-    'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
-    'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!'
-  ];
+  messageArray.splice(0, 1, messageArray[0].split('! ')[0], messageArray[0].split('! ')[1]);
 
-  return {
-    id: this.generateUniqueIdentity(this.commentsMaxCout, this.commentsStore),
-    avatar: `img/avatar-${this.generateRandomNumber(0, 6)}`,
-    message: this.getRandomValueFromArray(comments),
-    name: this.generateRandomName()
+  return () => {
+    const comment = {};
+    const idAvatar = getRandomInteger(1, 6);
+    comment.id = id;
+    comment.avatar = 'img/avatar-${idAvatar()}.svg ';
+    comment.message = '${ messageArray[indexMessageArr()]}. ${ messageArray[indexMessageArr()]}';
+    comment.name = '${nameArray[indexNameArr()]}';
+    id++;
+    return comment;
   };
-}
+};
+const createPhoto = () => {
+  let id = 1;
+  return () => {
+    const photo = {};
+    const numComments = getRandomInteger(0, 30);
+    const numLikes = getRandomInteger(15, 200);
+    photo.id = id;
+    photo.url = 'photos/${id}.jpg ';
+    photo.description = 'Это фотография №${id}';
+    photo.likes = numLikes();
 
-const generateRandomComments = () => {
-  const result = [];
-  const commentsCout = this.generateRandomNumber(0, 30);
-  for (let index = 0; index < commentsCout; index++) {
-    const comment = this.generateRandomComment();
-    result.push(comment);
-    this.commentsStore.set(comment.id, comment);
-  }
-
-  return result;
-}
-
-const getRandomArrayElement = (elements) => elements[getRandomInteger(0, elements.length - 1)];
-
-const createWizard = (identity) => {
-  return {
-    id: identity,
-    url: `photos/${identity}.jpg`,
-    description: this.generateRandomDescription(),
-    likes: this.generateRandomNumber(15, 200),
-    comments: this.generateRandomComments()
+    photo.comments = Array.from({ length: numComments() }, createComment());
+    id++;
+    return photo;
   };
-}
+};
+let newPhoto = createPhoto();
 
-const generateRandomDescription = () => ({
-  subjects: getRandomArrayElement(SUBJECTS),
-  adjectives: getRandomArrayElement(ADJECTIVES),
-  actions: getRandomArrayElement(ACTIONS),
-  place: getRandomArrayElement(PLACES),
-});
+const photoArray = Array.from({ length: 25 }, createPhoto());
 
-const similarWizards = Array.from({ length: SIMILAR_WIZARD_COUNT }, createWizard);
-
-console.log(similarWizards);
+console.log(photoArray);
+concole.table(photoArray[0].comments);
 
 
